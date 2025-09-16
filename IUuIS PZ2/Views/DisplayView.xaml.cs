@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace IUuIS_PZ2.Views
 {
     /// <summary>
-    /// Interaction logic for EntitiesView.xaml
+    /// Interaction logic for DisplayView.xaml
     /// </summary>
-    public partial class EntitiesView : UserControl
+    public partial class DisplayView : UserControl
     {
-        public EntitiesView()
+        public DisplayView()
         {
             InitializeComponent();
         }

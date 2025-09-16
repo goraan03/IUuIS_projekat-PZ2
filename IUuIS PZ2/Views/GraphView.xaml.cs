@@ -10,6 +10,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace IUuIS_PZ2.Views
@@ -17,7 +18,7 @@ namespace IUuIS_PZ2.Views
     /// <summary>
     /// Interaction logic for GraphView.xaml
     /// </summary>
-    public partial class GraphView : Window
+    public partial class GraphView : UserControl
     {
         public GraphView()
         {
