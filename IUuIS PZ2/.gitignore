@@ -1,0 +1,23 @@
+# Build
+bin/
+obj/
+[Aa]rtifacts/
+[Bb]uild/
+# VS
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Packages/Restore
+packages/
+*.nupkg
+# Logs
+log.txt
+# Others
+TestResults/
+*.cache
+*.ipch
+*.opendb
+*.db
+*.SQLite
