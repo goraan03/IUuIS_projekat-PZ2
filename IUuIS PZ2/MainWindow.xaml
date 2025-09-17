@@ -1,12 +1,39 @@
 ﻿<Window x:Class="IUuIS_PZ2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:IUuIS_PZ2"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Simulator" Width="1440" Height="1024" Background="White">
+    <!-- CG2 Tastatura -->
+    <Window.InputBindings>
+        <KeyBinding Key="D1" Command="{Binding NavigateEntitiesCommand}"/>
+        <KeyBinding Key="D2" Command="{Binding NavigateDisplayCommand}"/>
+        <KeyBinding Key="D3" Command="{Binding NavigateGraphCommand}"/>
+        <KeyBinding Modifiers="Control" Key="Z" Command="{Binding Undo.UndoCommand}"/>
+    </Window.InputBindings>
 
-    </Grid>
+    <DockPanel>
+        <!-- Top Menu (belo/sivo, kao u wireframe-u) -->
+        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="White">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Margin="16,8">
+                <Button Content="Network Entities" Margin="0,0,12,0" Padding="16,6"
+                        Background="#EEE" BorderBrush="#DDD" Command="{Binding NavigateEntitiesCommand}"/>
+                <Button Content="Network Display" Margin="0,0,12,0" Padding="16,6"
+                        Background="#EEE" BorderBrush="#DDD" Command="{Binding NavigateDisplayCommand}"/>
+                <Button Content="Measurement Graph" Margin="0,0,12,0" Padding="16,6"
+                        Background="White" BorderBrush="#777" Command="{Binding NavigateGraphCommand}"/>
+            </StackPanel>
+            <Button Content="↶ Undo" DockPanel.Dock="Right" Margin="0,8,16,8" Padding="16,6"
+                    Background="#EEE" Command="{Binding Undo.UndoCommand}"/>
+            <Border BorderBrush="#E6E6E6" BorderThickness="0,0,0,1" DockPanel.Dock="Bottom"/>
+        </DockPanel>
+
+        <!-- Sadržaj -->
+        <ContentControl Content="{Binding CurrentViewModel}" Background="White"/>
+
+        <!-- Status bar (CG2 hintovi) -->
+        <StatusBar DockPanel.Dock="Bottom" Background="White">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
+            </StatusBarItem>
+        </StatusBar>
+    </DockPanel>
 </Window>

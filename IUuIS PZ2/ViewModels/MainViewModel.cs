@@ -37,8 +37,4 @@ namespace IUuIS_PZ2.ViewModels
             NavigateGraphCommand = new RelayCommand(_ => CurrentViewModel = GraphVM);
         }
     }
-
-    // minimalni VM za Network Display – samo da navigacija radi
-    public class PlaceholderDisplayViewModel { public string Title => "Network Display (out of scope)"; }
-}
 }

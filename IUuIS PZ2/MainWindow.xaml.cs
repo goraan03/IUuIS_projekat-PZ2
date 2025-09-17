@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using IUuIS_PZ2.ViewModels;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,9 +17,11 @@ namespace IUuIS_PZ2
     /// </summary>
     public partial class MainWindow : Window
     {
+        public MainViewModel VM { get; } = new();
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = VM;
         }
     }
 }
