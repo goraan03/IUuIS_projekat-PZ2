@@ -1,7 +1,8 @@
-﻿using IUuIS_PZ2.Models;
-using IUuIS_PZ2.Utils;
+﻿// IUuIS_PZ2/ViewModels/GraphViewModel.cs
 using IUuIS_PZ2.Interface;
-using IUuIS_PZ2.ViewModels;
+using IUuIS_PZ2.Models;
+using IUuIS_PZ2.Services;
+using IUuIS_PZ2.Utils;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -43,52 +44,67 @@ namespace IUuIS_PZ2.ViewModels
 
         private void BuildPlot()
         {
-            var pm = new PlotModel();
+            var pm = new PlotModel { PlotAreaBorderColor = OxyColor.FromRgb(230, 230, 230) };
 
-            pm.Axes.Add(new DateTimeAxis
+            // Uzimamo poslednje 4 merenja i mapiramo na t0..t3
+            var data = ReadMeasurements(_selectedEntity?.Id).TakeLast(4).ToList();
+
+            var x = new CategoryAxis
             {
                 Position = AxisPosition.Bottom,
-                StringFormat = "HH:mm:ss",
-                Title = "Time",
-                IntervalType = DateTimeIntervalType.Seconds,
+                Title = "Time(t)",
+                Key = "timeAxis",
+                GapWidth = 0.2,
                 MajorGridlineStyle = LineStyle.Solid,
-                MajorGridlineColor = OxyColor.FromRgb(230, 230, 230),
-                MinorGridlineStyle = LineStyle.Dot
-            });
+                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238),
+                MinorGridlineStyle = LineStyle.None
+            };
+            for (int i = 0; i < data.Count; i++) x.Labels.Add($"t{i}");
+            pm.Axes.Add(x);
+
+            // Y skala (MW) – krugovi stoje na srednjoj liniji (Y=3), grid lagan
             pm.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
                 Title = "MW",
+                Minimum = 0,
+                Maximum = 6,
                 MajorGridlineStyle = LineStyle.Solid,
-                MajorGridlineColor = OxyColor.FromRgb(230, 230, 230),
-                MinorGridlineStyle = LineStyle.Dot
+                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238),
+                MinorGridlineStyle = LineStyle.Dot,
+                MinorGridlineColor = OxyColor.FromRgb(245, 245, 245)
             });
 
-            // Dve serije: valid (puni sivi), invalid (prazan krug)
             var valid = new ScatterSeries
             {
                 MarkerType = MarkerType.Circle,
                 MarkerFill = OxyColor.FromRgb(220, 220, 220),
                 MarkerStroke = OxyColors.Gray,
-                MarkerStrokeThickness = 1
+                MarkerStrokeThickness = 1,
+                XAxisKey = "timeAxis"
             };
             var invalid = new ScatterSeries
             {
                 MarkerType = MarkerType.Circle,
                 MarkerFill = OxyColors.Transparent,
                 MarkerStroke = OxyColors.DimGray,
-                MarkerStrokeThickness = 1
+                MarkerStrokeThickness = 1,
+                XAxisKey = "timeAxis"
             };
 
-            foreach (var r in ReadMeasurements(_selectedEntity?.Id))
+            for (int i = 0; i < data.Count; i++)
             {
-                // G3: poluprečnik ∝ vrednosti
-                var size = Math.Clamp(r.Value * 6.0, 8, 40);
-                var x = DateTimeAxis.ToDouble(r.Timestamp);
-                var point = new ScatterPoint(x, r.Value, size);
+                var r = data[i];
 
-                if (r.IsValid) valid.Points.Add(point);
-                else invalid.Points.Add(point);
+                // Poluprečnik ∝ vrednosti (1..5 MW) → veći krug za veću vrednost
+                var size = Math.Clamp((r.Value - 1) / 4.0, 0, 1); // 0..1
+                var markerSize = 16 + size * 40;                  // 16..56 px
+
+                // Centar svih krugova na horizontalnoj liniji (Y=3)
+                var p = new ScatterPoint(i, 3, markerSize);
+
+                if (r.IsValid) valid.Points.Add(p);
+                else invalid.Points.Add(p);
             }
 
             pm.Series.Add(valid);
@@ -115,7 +131,6 @@ namespace IUuIS_PZ2.ViewModels
                        })
                        .Where(x => x != null)!
                        .Cast<MeasurementRecord>()
-                       .TakeLast(60)
                        .ToList();
         }
     }

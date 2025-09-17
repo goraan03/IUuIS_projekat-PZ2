@@ -25,14 +25,11 @@ namespace IUuIS_PZ2.Services
         {
             var list = _entitiesProvider();
             if (list == null || list.Count == 0) return;
-
-            // Nasumicno izaberi entitet i generisi vrednost
             var ent = list[_rnd.Next(list.Count)];
 
-            // T4: validno 1–5 MW; povremeno posalji i invalid
+            // T4: validno 1–5 MW; povremeno posalji invalid
             var val = 1 + _rnd.NextDouble() * 4; // 1..5
-            if (_rnd.NextDouble() < 0.2)
-                val = _rnd.NextDouble() < 0.5 ? 0.5 : 5.8; // invalid vrednosti
+            if (_rnd.NextDouble() < 0.2) val = _rnd.NextDouble() < 0.5 ? 0.5 : 5.8;
 
             MeasurementArrived?.Invoke(this, (ent.Id, val));
         }

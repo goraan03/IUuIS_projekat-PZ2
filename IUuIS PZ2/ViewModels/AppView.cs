@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IUuIS_PZ2.Models
+namespace IUuIS_PZ2.ViewModels
 {
-    // T4 Tipovi
-    public enum DerType
+    public enum AppView
     {
-        SolarniPanel,
-        Vetrogenerator
+        Entities,
+        Display,
+        Graph
     }
 }

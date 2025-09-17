@@ -3,16 +3,58 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:oxy="http://oxyplot.org/wpf"
              Background="White">
-    <DockPanel>
-        <!-- Kontrole iznad grafa (belo/sivo) -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="24,24,24,12">
-            <ComboBox Width="280" ItemsSource="{Binding Entities}" SelectedItem="{Binding SelectedEntity}" DisplayMemberPath="Name"/>
-            <Button Content="Refresh" Margin="12,0,0,0" Background="#EEE" BorderBrush="#DDD" Command="{Binding RefreshCommand}"/>
-        </StackPanel>
+    <!-- Popuni ceo Content prostor -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- kontrole -->
+            <RowDefinition Height="*"/>
+            <!-- GRAF: zauzima SVE -->
+            <RowDefinition Height="Auto"/>
+            <!-- legenda -->
+        </Grid.RowDefinitions>
 
-        <!-- G3 “bubble” graf -->
-        <Border Margin="24" BorderBrush="#E6E6E6" BorderThickness="1" Background="White">
-            <oxy:PlotView Model="{Binding Plot}" />
+        <!-- Kontrole gore, centrirane -->
+        <Grid Grid.Row="0" Margin="24,24,24,12"
+              HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox Grid.Column="0" Width="280"
+                      ItemsSource="{Binding Entities}"
+                      SelectedItem="{Binding SelectedEntity}"
+                      DisplayMemberPath="Name"/>
+            <Button Grid.Column="2" Content="Refresh"
+                    Background="#EEEEEE" BorderBrush="#DDDDDD" Padding="16,6"
+                    Command="{Binding RefreshCommand}"/>
+        </Grid>
+
+        <!-- GRAF – razvučen po CELoj širini i visini raspoloživog prostora -->
+        <Border Grid.Row="1"
+                Margin="24"
+                BorderBrush="#E6E6E6" BorderThickness="1"
+                Background="White" Padding="16"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!-- Ako hoćeš da ne ide baš “od ivice do ivice”, uključi sledeći Grid kao “center limiter”:
+                 <Grid HorizontalAlignment="Center" VerticalAlignment="Stretch" MaxWidth="1200">
+                    <oxy:PlotView ... />
+                 </Grid>
+                 Inače direktno PlotView kao dole puni sve. -->
+            <oxy:PlotView Model="{Binding Plot}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"/>
         </Border>
-    </DockPanel>
+
+        <!-- Legenda ispod grafa, centrirana -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    HorizontalAlignment="Center" Margin="0,8,0,24">
+            <TextBlock Text="Legend: " Foreground="Gray" Margin="0,6,8,0"/>
+            <Ellipse Fill="#DDDDDD" Stroke="Gray" Width="12" Height="12" Margin="0,6,4,0"/>
+            <TextBlock Text="Valid" Margin="0,6,12,0"/>
+            <Ellipse Stroke="Gray" Fill="Transparent" Width="12" Height="12" Margin="0,6,4,0"/>
+            <TextBlock Text="Invalid" Margin="0,6,0,0"/>
+        </StackPanel>
+    </Grid>
 </UserControl>

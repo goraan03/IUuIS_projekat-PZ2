@@ -1,16 +1,13 @@
-﻿using IUuIS_PZ2.Interface;
-using IUuIS_PZ2.Models;
-using IUuIS_PZ2.Services;
-using IUuIS_PZ2.Utils;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using IUuIS_PZ2.Interface;
+using IUuIS_PZ2.Models;
+using IUuIS_PZ2.Services;
+using IUuIS_PZ2.Utils;
 
 namespace IUuIS_PZ2.ViewModels
 {
@@ -23,16 +20,15 @@ namespace IUuIS_PZ2.ViewModels
         private readonly MeasurementSimulator _sim;
         private readonly UndoManager _undo;
 
-        // P1 (radio + text)
+        // P1
         private bool _searchByName = true;
         public bool SearchByName { get => _searchByName; set { if (Set(ref _searchByName, value)) EntitiesView.Refresh(); } }
         private bool _searchByType;
         public bool SearchByType { get => _searchByType; set { if (Set(ref _searchByType, value)) EntitiesView.Refresh(); } }
-
         private string _searchText = "";
         public string SearchText { get => _searchText; set { if (Set(ref _searchText, value)) EntitiesView.Refresh(); } }
 
-        // Komande
+        // Toolbar komande
         public RelayCommand AddCommand { get; }
         public RelayCommand EditCommand { get; }
         public RelayCommand DeleteCommand { get; }
@@ -41,12 +37,19 @@ namespace IUuIS_PZ2.ViewModels
         public RelayCommand ResetSearchCommand { get; }
         public ICommand UndoCommand => _undo.UndoCommand;
 
+        // Add panel (kao u wireframe-u)
+        private int _newId; public int NewId { get => _newId; set => Set(ref _newId, value); }
+        private string _newName = ""; public string NewName { get => _newName; set => Set(ref _newName, value); }
+        private DerType _newType = DerType.SolarniPanel; public DerType NewType { get => _newType; set => Set(ref _newType, value); }
+        private double _newValue; public double NewValue { get => _newValue; set => Set(ref _newValue, value); }
+        public RelayCommand AddNewCommand { get; }
+
         public EntitiesViewModel(UndoManager undo, ILogService log)
         {
             _undo = undo;
             _log = log;
 
-            // pocetni primeri (T4)
+            // Početni primeri (T4)
             Entities.Add(new DerEntity { Id = 12, Name = "Solar-NS-01", Type = DerType.SolarniPanel, LastValue = 3.4, IsValid = true });
             Entities.Add(new DerEntity { Id = 27, Name = "Wind-IB-07", Type = DerType.Vetrogenerator, LastValue = 5.7, IsValid = false });
 
@@ -60,6 +63,8 @@ namespace IUuIS_PZ2.ViewModels
 
             ApplySearchCommand = new RelayCommand(_ => EntitiesView.Refresh());
             ResetSearchCommand = new RelayCommand(_ => { SearchText = ""; EntitiesView.Refresh(); });
+
+            AddNewCommand = new RelayCommand(_ => AddFromForm(), _ => CanAddFromForm());
 
             _sim = new MeasurementSimulator(() => Entities.ToList());
             _sim.MeasurementArrived += OnMeasurement;
@@ -81,7 +86,7 @@ namespace IUuIS_PZ2.ViewModels
         {
             var ent = Entities.FirstOrDefault(x => x.Id == m.entityId);
             if (ent == null) return;
-            var valid = m.value >= 1 && m.value <= 5;
+            var valid = m.value >= 1 && m.value <= 5; // T4 validacija
 
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -126,7 +131,26 @@ namespace IUuIS_PZ2.ViewModels
             _undo.Push(() => Entities.Insert(index, e));
         }
 
+        private bool CanAddFromForm()
+            => NewId > 0 && !string.IsNullOrWhiteSpace(NewName);
+
+        private void AddFromForm()
+        {
+            var e = new DerEntity
+            {
+                Id = NewId,
+                Name = NewName,
+                Type = NewType,
+                LastValue = NewValue,
+                IsValid = NewValue >= 1 && NewValue <= 5
+            };
+            Entities.Add(e);
+            _undo.Push(() => Entities.Remove(e));
+
+            // reset forme
+            NewId = 0; NewName = ""; NewType = DerType.SolarniPanel; NewValue = 0;
+        }
+
         private int NextId() => Entities.Count == 0 ? 1 : Entities.Max(x => x.Id) + 1;
     }
 }
-

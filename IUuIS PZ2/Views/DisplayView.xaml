@@ -3,6 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="White">
     <Grid Margin="24">
-        <TextBlock Text="Network Display (not in CG2/T4/G3/P1 scope)" Foreground="Gray" FontSize="16"/>
+        <TextBlock Text="Network Display (minimal placeholder)" Foreground="Gray" FontSize="16"/>
     </Grid>
 </UserControl>

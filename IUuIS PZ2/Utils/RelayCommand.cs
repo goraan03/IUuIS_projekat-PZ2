@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace IUuIS_PZ2.Utils
 {
+    // Najjednostavniji ICommand
     public class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;

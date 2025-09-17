@@ -8,6 +8,7 @@ using System.Windows.Input;
 
 namespace IUuIS_PZ2.Services
 {
+    // Undo stek (CG2)
     public class UndoManager
     {
         private readonly Stack<Action> _stack = new();

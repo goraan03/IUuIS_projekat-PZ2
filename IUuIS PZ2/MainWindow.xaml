@@ -1,8 +1,9 @@
 ﻿<Window x:Class="IUuIS_PZ2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:IUuIS_PZ2.ViewModels"
         Title="Simulator" Width="1440" Height="1024" Background="White">
-    <!-- CG2 Tastatura -->
+
     <Window.InputBindings>
         <KeyBinding Key="D1" Command="{Binding NavigateEntitiesCommand}"/>
         <KeyBinding Key="D2" Command="{Binding NavigateDisplayCommand}"/>
@@ -10,30 +11,63 @@
         <KeyBinding Modifiers="Control" Key="Z" Command="{Binding Undo.UndoCommand}"/>
     </Window.InputBindings>
 
-    <DockPanel>
-        <!-- Top Menu (belo/sivo, kao u wireframe-u) -->
-        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Background="White">
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Margin="16,8">
-                <Button Content="Network Entities" Margin="0,0,12,0" Padding="16,6"
-                        Background="#EEE" BorderBrush="#DDD" Command="{Binding NavigateEntitiesCommand}"/>
-                <Button Content="Network Display" Margin="0,0,12,0" Padding="16,6"
-                        Background="#EEE" BorderBrush="#DDD" Command="{Binding NavigateDisplayCommand}"/>
-                <Button Content="Measurement Graph" Margin="0,0,12,0" Padding="16,6"
-                        Background="White" BorderBrush="#777" Command="{Binding NavigateGraphCommand}"/>
+    <Window.Resources>
+        <Style x:Key="TopTabButton" TargetType="Button">
+            <Setter Property="Padding" Value="16,6"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="Background" Value="#EEEEEE"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="Foreground" Value="#2B2B2B"/>
+        </Style>
+        <Style x:Key="EntitiesTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Entities}">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#777777"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DisplayTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Display}">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#777777"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="GraphTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Graph}">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#777777"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+        <!-- Top -->
+        <DockPanel DockPanel.Dock="Top" Background="White">
+            <StackPanel Orientation="Horizontal" Margin="16,8" DockPanel.Dock="Left">
+                <Button Content="Network Entities" Style="{StaticResource EntitiesTabStyle}"
+                        Command="{Binding NavigateEntitiesCommand}"/>
+                <Button Content="Network Display" Style="{StaticResource DisplayTabStyle}"
+                        Command="{Binding NavigateDisplayCommand}"/>
+                <Button Content="Measurement Graph" Style="{StaticResource GraphTabStyle}"
+                        Command="{Binding NavigateGraphCommand}"/>
             </StackPanel>
-            <Button Content="↶ Undo" DockPanel.Dock="Right" Margin="0,8,16,8" Padding="16,6"
-                    Background="#EEE" Command="{Binding Undo.UndoCommand}"/>
-            <Border BorderBrush="#E6E6E6" BorderThickness="0,0,0,1" DockPanel.Dock="Bottom"/>
+            <Button Content="↶ Undo" Margin="0,8,16,8" Padding="16,6"
+                    Background="#EEEEEE" BorderBrush="#DDDDDD"
+                    HorizontalAlignment="Right" Command="{Binding Undo.UndoCommand}"/>
+            <Border DockPanel.Dock="Bottom" BorderBrush="#E6E6E6" BorderThickness="0,0,0,1"/>
         </DockPanel>
 
-        <!-- Sadržaj -->
-        <ContentControl Content="{Binding CurrentViewModel}" Background="White"/>
-
-        <!-- Status bar (CG2 hintovi) -->
-        <StatusBar DockPanel.Dock="Bottom" Background="White">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
-            </StatusBarItem>
+        <!-- Status bar – SKROZ DOLE -->
+        <StatusBar DockPanel.Dock="Bottom" Background="White" Margin="0">
+            <TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
         </StatusBar>
+
+        <!-- Sadržaj popunjava SVE između top bara i status bara -->
+        <ContentControl Content="{Binding CurrentViewModel}" Background="White"/>
     </DockPanel>
 </Window>

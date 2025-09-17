@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace IUuIS_PZ2.Models
 {
+    // Entitet sa poslednjom vrednoscu i validnoscu (T4 1–5 MW)
     public class DerEntity : ObservableObject
     {
         private int _id;
