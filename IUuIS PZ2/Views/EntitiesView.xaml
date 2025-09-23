@@ -5,139 +5,226 @@
              xmlns:models="clr-namespace:IUuIS_PZ2.Models"
              Background="White">
 
-    <!-- CG2: Enter/Esc za P1 -->
-    <UserControl.InputBindings>
-        <KeyBinding Key="Enter" Command="{Binding ApplySearchCommand}"/>
-        <KeyBinding Key="Escape" Command="{Binding ResetSearchCommand}"/>
-    </UserControl.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Toolbar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Search -->
+            <RowDefinition Height="*"/>
+            <!-- Table -->
+            <RowDefinition Height="Auto"/>
+            <!-- Form (Add/Edit) -->
+        </Grid.RowDefinitions>
 
-    <UserControl.Resources>
-        <Style x:Key="HeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F7F7F7"/>
-            <Setter Property="Foreground" Value="#2B2B2B"/>
-            <Setter Property="BorderBrush" Value="#E6E6E6"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Height" Value="36"/>
-        </Style>
-    </UserControl.Resources>
-
-    <DockPanel Background="White">
         <!-- Toolbar -->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="24,24,24,8">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="24,24,24,8">
             <Button Content="+ Add" Width="104" Height="32" Margin="0,0,12,0"
                     Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding AddCommand}"/>
             <Button Content="✎ Edit" Width="104" Height="32" Margin="0,0,12,0"
-                    Background="#EEEEEE" BorderBrush="#DDDDDD"
-                    Command="{Binding EditCommand}" CommandParameter="{Binding SelectedItem, ElementName=grid}"/>
+                    Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding EditCommand}"/>
             <Button Content="🗑 Delete" Width="104" Height="32" Margin="0,0,12,0"
-                    Background="#EEEEEE" BorderBrush="#DDDDDD"
-                    Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem, ElementName=grid}"/>
+                    Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding DeleteCommand}"/>
             <Button Content="⟲ Restart sim" Width="128" Height="32"
                     Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding RestartSimCommand}"/>
         </StackPanel>
 
-        <!-- P1 Pretraga -->
-        <StackPanel DockPanel.Dock="Top" Margin="24,0,24,12">
+        <!-- Search -->
+        <StackPanel Grid.Row="1" Margin="24,0,24,12">
             <TextBlock Text="Search:" Foreground="Gray"/>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,0" VerticalAlignment="Center">
                 <RadioButton Content="Name" IsChecked="{Binding SearchByName}" Margin="0,0,12,0"/>
                 <RadioButton Content="Type" IsChecked="{Binding SearchByType}" Margin="0,0,12,0"/>
                 <TextBox Width="420" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock Text="Enter: Apply" Foreground="Gray" Margin="16,6,0,0"/>
-                <TextBlock Text="Esc: Reset" Foreground="Gray" Margin="16,6,0,0"/>
+                <TextBlock Text="Esc: Reset"   Foreground="Gray" Margin="16,6,0,0"/>
             </StackPanel>
         </StackPanel>
 
-        <!-- Tabela -->
-        <Grid DockPanel.Dock="Top">
-            <DataGrid x:Name="grid" Margin="24,0,24,24" Background="White"
-                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E6E6E6"
-                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                      RowHeaderWidth="0" ColumnHeaderHeight="36"
-                      ItemsSource="{Binding EntitiesView}">
-                <DataGrid.ColumnHeaderStyle>
-                    <StaticResource ResourceKey="HeaderStyle"/>
-                </DataGrid.ColumnHeaderStyle>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="220"/>
-                    <DataGridTextColumn Header="Last Value (MW)" Binding="{Binding LastValue, StringFormat={}{0:F1}}" Width="220"/>
-                    <DataGridTemplateColumn Header="Status" Width="140">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <!-- Valid -->
-                                    <Border x:Name="validTag" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1"
-                                            Padding="4" CornerRadius="2" HorizontalAlignment="Left">
-                                        <TextBlock Text="Valid" Foreground="#777777"/>
-                                    </Border>
-                                    <!-- Invalid (dashed) -->
-                                    <Grid x:Name="invalidTag" HorizontalAlignment="Left">
-                                        <Rectangle Stroke="#BDBDBD" StrokeThickness="1" StrokeDashArray="4 4"
-                                                   RadiusX="2" RadiusY="2" Width="66" Height="26"/>
-                                        <TextBlock Text="Invalid" Foreground="#777777"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,4,0,0"/>
-                                    </Grid>
+        <!-- Table -->
+        <DataGrid Grid.Row="2" x:Name="grid" Margin="24,0,24,24" Background="White"
+                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E6E6E6"
+                  AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                  RowHeaderWidth="0" ColumnHeaderHeight="36"
+                  ItemsSource="{Binding EntitiesView}"
+                  SelectedItem="{Binding SelectedEntity, Mode=TwoWay}">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#F7F7F7"/>
+                    <Setter Property="Foreground" Value="#2B2B2B"/>
+                    <Setter Property="BorderBrush" Value="#E6E6E6"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="Height" Value="36"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID"   Binding="{Binding Id}"   Width="80"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="220"/>
+                <DataGridTextColumn Header="Last Value (MW)" Binding="{Binding LastValue, StringFormat={}{0:F1}}" Width="220"/>
+                <DataGridTemplateColumn Header="Status" Width="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Border x:Name="validTag" Background="#F7F7F7" BorderBrush="#D9D9D9" BorderThickness="1"
+                                        Padding="4" CornerRadius="2" HorizontalAlignment="Left">
+                                    <TextBlock Text="Valid" Foreground="#777777"/>
+                                </Border>
+                                <Grid x:Name="invalidTag" HorizontalAlignment="Left">
+                                    <Rectangle Stroke="#BDBDBD" StrokeThickness="1" StrokeDashArray="4 4"
+                                               RadiusX="2" RadiusY="2" Width="66" Height="26"/>
+                                    <TextBlock Text="Invalid" Foreground="#777777"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,4,0,0"/>
                                 </Grid>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding IsValid}" Value="True">
-                                        <Setter TargetName="invalidTag" Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsValid}" Value="False">
-                                        <Setter TargetName="validTag" Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsValid}" Value="True">
+                                    <Setter TargetName="invalidTag" Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsValid}" Value="False">
+                                    <Setter TargetName="validTag" Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Forms (centar) -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Add panel (centar) -->
+            <Border Grid.Column="1" Padding="24" Width="560" Background="#FAFAFA"
+                    BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="Add new entity:" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="260"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- ID -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Name -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Type -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Value -->
+                            <RowDefinition Height="16"/>
+                            <!-- separator -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Add button -->
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="0" Grid.Column="2" Width="260" Text="{Binding NewId, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="2" Grid.Column="2" Width="260" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
+                        <ComboBox  Grid.Row="4" Grid.Column="2" Width="260"
+                                   SelectedValuePath="Tag" SelectedValue="{Binding NewType}">
+                            <ComboBoxItem Content="Solarni panel"  Tag="{x:Static models:DerType.SolarniPanel}"/>
+                            <ComboBoxItem Content="Vetrogenerator" Tag="{x:Static models:DerType.Vetrogenerator}"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="6" Grid.Column="2" Width="260" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <Button Grid.Row="8" Grid.Column="2" Content="+ Add" Width="120" Height="32"
+                                HorizontalAlignment="Left" Margin="0,8,0,0"
+                                Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding AddNewCommand}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Edit panel (centar) -->
+            <Border Grid.Column="1" Padding="24" Width="560" Background="#FAFAFA"
+                    BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="Edit entity:" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="260"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- ID -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Name -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Type -->
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Value -->
+                            <RowDefinition Height="16"/>
+                            <!-- separator -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Save/Cancel -->
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding EditId}" Margin="0,6,0,0"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="2" Grid.Column="2" Width="260" Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
+                        <ComboBox  Grid.Row="4" Grid.Column="2" Width="260"
+                                   SelectedValuePath="Tag" SelectedValue="{Binding EditType}">
+                            <ComboBoxItem Content="Solarni panel"  Tag="{x:Static models:DerType.SolarniPanel}"/>
+                            <ComboBoxItem Content="Vetrogenerator" Tag="{x:Static models:DerType.Vetrogenerator}"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="6" Grid.Column="2" Width="260" Text="{Binding EditValue, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <StackPanel Grid.Row="8" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+                            <Button Content="Save"   Width="96" Height="32" Margin="0,0,12,0"
+                                    Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding SaveEditCommand}"/>
+                            <Button Content="Cancel" Width="96" Height="32"
+                                    Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding CancelEditCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Grid>
-
-        <!-- Add new entity panel (centriran kao u wireframe-u) -->
-        <Border Margin="24,0,24,24" BorderBrush="#E6E6E6" BorderThickness="1"
-                Background="#FAFAFA" Padding="24" HorizontalAlignment="Center" Width="560">
-            <StackPanel>
-                <TextBlock Text="Add new entity:" FontWeight="SemiBold" Margin="0,0,0,16"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="260"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="16"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Margin="0,6,0,0"/>
-                    <TextBox   Grid.Row="0" Grid.Column="2" Width="260" Text="{Binding NewId, UpdateSourceTrigger=PropertyChanged}"/>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
-                    <TextBox   Grid.Row="2" Grid.Column="2" Width="260" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
-                    <ComboBox  Grid.Row="4" Grid.Column="2" Width="260"
-                               SelectedValuePath="Tag" SelectedValue="{Binding NewType}">
-                        <ComboBoxItem Content="Solarni panel"   Tag="{x:Static models:DerType.SolarniPanel}"/>
-                        <ComboBoxItem Content="Vetrogenerator"  Tag="{x:Static models:DerType.Vetrogenerator}"/>
-                    </ComboBox>
-
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
-                    <TextBox   Grid.Row="6" Grid.Column="2" Width="260" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"/>
-
-                    <Button Grid.Row="8" Grid.Column="2" Content="+ Add" Width="120" Height="32" HorizontalAlignment="Left"
-                            Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding AddNewCommand}"/>
-                </Grid>
-            </StackPanel>
-        </Border>
-    </DockPanel>
+    </Grid>
 </UserControl>

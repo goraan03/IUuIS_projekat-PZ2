@@ -28,6 +28,14 @@ namespace IUuIS_PZ2.ViewModels
             set { if (Set(ref _selectedEntity, value)) BuildPlot(); }
         }
 
+        // prikaz invalid tačaka (checkbox)
+        private bool _showInvalid = true;
+        public bool ShowInvalid
+        {
+            get => _showInvalid;
+            set { if (Set(ref _showInvalid, value)) BuildPlot(); }
+        }
+
         private PlotModel _plot = new();
         public PlotModel Plot { get => _plot; private set => Set(ref _plot, value); }
 
@@ -38,6 +46,13 @@ namespace IUuIS_PZ2.ViewModels
             _log = log;
             _entitiesVM = entitiesVM;
             _selectedEntity = Entities.FirstOrDefault();
+
+            // auto-refresh grafa kada stigne merenje za izabran entitet
+            _entitiesVM.MeasurementArrived += id =>
+            {
+                if (SelectedEntity?.Id == id) BuildPlot();
+            };
+
             RefreshCommand = new RelayCommand(_ => BuildPlot());
             BuildPlot();
         }
@@ -46,8 +61,8 @@ namespace IUuIS_PZ2.ViewModels
         {
             var pm = new PlotModel { PlotAreaBorderColor = OxyColor.FromRgb(230, 230, 230) };
 
-            // Uzimamo poslednje 4 merenja i mapiramo na t0..t3
-            var data = ReadMeasurements(_selectedEntity?.Id).TakeLast(4).ToList();
+            // poslednje 4 merenja (wireframe t0..t3)
+            var data = ReadMeasurements(SelectedEntity?.Id).TakeLast(4).ToList();
 
             var x = new CategoryAxis
             {
@@ -56,13 +71,11 @@ namespace IUuIS_PZ2.ViewModels
                 Key = "timeAxis",
                 GapWidth = 0.2,
                 MajorGridlineStyle = LineStyle.Solid,
-                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238),
-                MinorGridlineStyle = LineStyle.None
+                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238)
             };
             for (int i = 0; i < data.Count; i++) x.Labels.Add($"t{i}");
             pm.Axes.Add(x);
 
-            // Y skala (MW) – krugovi stoje na srednjoj liniji (Y=3), grid lagan
             pm.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
@@ -95,20 +108,20 @@ namespace IUuIS_PZ2.ViewModels
             for (int i = 0; i < data.Count; i++)
             {
                 var r = data[i];
+                // poluprečnik ∝ vrednosti 1..5  → 16..56px
+                var t = Math.Clamp((r.Value - 1) / 4.0, 0, 1);
+                var size = 16 + t * 40;
 
-                // Poluprečnik ∝ vrednosti (1..5 MW) → veći krug za veću vrednost
-                var size = Math.Clamp((r.Value - 1) / 4.0, 0, 1); // 0..1
-                var markerSize = 16 + size * 40;                  // 16..56 px
+                // svi mehuri u visini Y=3 radi “horizontalnog” izgleda iz wireframe-a
+                var point = new ScatterPoint(i, 3, size);
 
-                // Centar svih krugova na horizontalnoj liniji (Y=3)
-                var p = new ScatterPoint(i, 3, markerSize);
-
-                if (r.IsValid) valid.Points.Add(p);
-                else invalid.Points.Add(p);
+                if (r.IsValid) valid.Points.Add(point);
+                else if (ShowInvalid) invalid.Points.Add(point);
             }
 
             pm.Series.Add(valid);
-            pm.Series.Add(invalid);
+            if (ShowInvalid) pm.Series.Add(invalid);
+
             Plot = pm;
         }
 

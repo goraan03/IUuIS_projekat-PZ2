@@ -1,59 +1,26 @@
-﻿<Window x:Class="IUuIS_PZ2.MainWindow"
+﻿<!-- IUuIS_PZ2/MainWindow.xaml -->
+<Window x:Class="IUuIS_PZ2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:IUuIS_PZ2.ViewModels"
         Title="Simulator" Width="1440" Height="1024" Background="White">
-
     <Window.InputBindings>
         <KeyBinding Key="D1" Command="{Binding NavigateEntitiesCommand}"/>
         <KeyBinding Key="D2" Command="{Binding NavigateDisplayCommand}"/>
         <KeyBinding Key="D3" Command="{Binding NavigateGraphCommand}"/>
+        <KeyBinding Modifiers="Control" Key="K" Command="{Binding ToggleConsoleCommand}"/>
         <KeyBinding Modifiers="Control" Key="Z" Command="{Binding Undo.UndoCommand}"/>
     </Window.InputBindings>
 
-    <Window.Resources>
-        <Style x:Key="TopTabButton" TargetType="Button">
-            <Setter Property="Padding" Value="16,6"/>
-            <Setter Property="Margin" Value="0,0,12,0"/>
-            <Setter Property="Background" Value="#EEEEEE"/>
-            <Setter Property="BorderBrush" Value="#DDDDDD"/>
-            <Setter Property="Foreground" Value="#2B2B2B"/>
-        </Style>
-        <Style x:Key="EntitiesTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Entities}">
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#777777"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="DisplayTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Display}">
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#777777"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="GraphTabStyle" TargetType="Button" BasedOn="{StaticResource TopTabButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding CurrentView}" Value="{x:Static vm:AppView.Graph}">
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#777777"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
-
     <DockPanel LastChildFill="True">
-        <!-- Top -->
+        <!-- Top bar -->
         <DockPanel DockPanel.Dock="Top" Background="White">
             <StackPanel Orientation="Horizontal" Margin="16,8" DockPanel.Dock="Left">
-                <Button Content="Network Entities" Style="{StaticResource EntitiesTabStyle}"
+                <Button Content="Network Entities" Margin="0,0,12,0" Padding="16,6"
                         Command="{Binding NavigateEntitiesCommand}"/>
-                <Button Content="Network Display" Style="{StaticResource DisplayTabStyle}"
+                <Button Content="Network Display" Margin="0,0,12,0" Padding="16,6"
                         Command="{Binding NavigateDisplayCommand}"/>
-                <Button Content="Measurement Graph" Style="{StaticResource GraphTabStyle}"
+                <Button Content="Measurement Graph" Margin="0,0,12,0" Padding="16,6"
                         Command="{Binding NavigateGraphCommand}"/>
             </StackPanel>
             <Button Content="↶ Undo" Margin="0,8,16,8" Padding="16,6"
@@ -62,12 +29,51 @@
             <Border DockPanel.Dock="Bottom" BorderBrush="#E6E6E6" BorderThickness="0,0,0,1"/>
         </DockPanel>
 
-        <!-- Status bar – SKROZ DOLE -->
-        <StatusBar DockPanel.Dock="Bottom" Background="White" Margin="0">
+        <!-- CMD konzola (Ctrl+K) -->
+        <Border DockPanel.Dock="Top" Background="#111111" Padding="8" Visibility="{Binding ConsoleVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="160"/>
+                </Grid.RowDefinitions>
+                <!-- input linija -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text=">" FontFamily="Consolas" Foreground="#EEEEEE" VerticalAlignment="Center" Margin="4,0,8,0"/>
+                    <TextBox x:Name="ConsoleInputBox"
+                             Grid.Column="1"
+                             FontFamily="Consolas" FontSize="14"
+                             Background="#111111" Foreground="#EEEEEE"
+                             BorderBrush="#444444" Padding="6"
+                             Text="{Binding ConsoleInput, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ExecuteConsoleCommand}"/>
+                            <KeyBinding Key="Escape" Command="{Binding ToggleConsoleCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </Grid>
+                <!-- istorija -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="#111111" BorderBrush="#444444" BorderThickness="1">
+                    <ItemsControl ItemsSource="{Binding ConsoleHistory}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontFamily="Consolas" Foreground="#CFCFCF" Margin="4,2"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- Status bar – dno -->
+        <StatusBar DockPanel.Dock="Bottom" Background="White">
             <TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
         </StatusBar>
 
-        <!-- Sadržaj popunjava SVE između top bara i status bara -->
+        <!-- Content -->
         <ContentControl Content="{Binding CurrentViewModel}" Background="White"/>
     </DockPanel>
 </Window>

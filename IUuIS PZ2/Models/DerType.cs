@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿// IUuIS_PZ2/Models/DerType.cs
 namespace IUuIS_PZ2.Models
 {
-    // T4 Tipovi
     public enum DerType
     {
         SolarniPanel,
