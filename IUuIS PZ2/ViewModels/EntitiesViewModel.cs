@@ -54,26 +54,35 @@ namespace IUuIS_PZ2.ViewModels
         public RelayCommand ResetSearchCommand { get; }
         public ICommand UndoCommand => _undo.UndoCommand;
 
-        // Add panel (validacija: ID>0 i Name!=empty)
-        private int _newId; public int NewId { get => _newId; set { if (Set(ref _newId, value)) AddNewCommand.RaiseCanExecuteChanged(); } }
-        private string _newName = ""; public string NewName { get => _newName; set { if (Set(ref _newName, value)) AddNewCommand.RaiseCanExecuteChanged(); } }
+        // Add panel
+        private int _newId;
+        public int NewId { get => _newId; set { if (Set(ref _newId, value)) { AddNewCommand.RaiseCanExecuteChanged(); OnPropertyChanged(nameof(NewIdValid)); } } }
+        private string _newName = "";
+        public string NewName { get => _newName; set { if (Set(ref _newName, value)) { AddNewCommand.RaiseCanExecuteChanged(); OnPropertyChanged(nameof(NewNameValid)); } } }
         private DerType _newType = DerType.SolarniPanel; public DerType NewType { get => _newType; set => Set(ref _newType, value); }
         private double _newValue; public double NewValue { get => _newValue; set => Set(ref _newValue, value); }
         public RelayCommand AddNewCommand { get; }
 
-        // Edit panel (IsEditing: prikazuje Edit panel umesto Add)
+        // Add validacije
+        public bool NewIdValid => NewId > 0;
+        public bool NewNameValid => !string.IsNullOrWhiteSpace(NewName);
+
+        // Edit panel
         private bool _isEditing; public bool IsEditing { get => _isEditing; set => Set(ref _isEditing, value); }
         private DerEntity? _editing;
 
-        private int _editId; public int EditId { get => _editId; set => Set(ref _editId, value); } // read-only u UI
-        private string _editName = ""; public string EditName { get => _editName; set { if (Set(ref _editName, value)) SaveEditCommand.RaiseCanExecuteChanged(); } }
+        private int _editId; public int EditId { get => _editId; set => Set(ref _editId, value); }
+        private string _editName = ""; public string EditName { get => _editName; set { if (Set(ref _editName, value)) SaveEditCommand.RaiseCanExecuteChanged(); OnPropertyChanged(nameof(EditNameValid)); } }
         private DerType _editType; public DerType EditType { get => _editType; set => Set(ref _editType, value); }
-        private double _editValue; public double EditValue { get => _editValue; set => Set(ref _editValue, value); }
+        private double _editValue; public double EditValue { get => _editValue; set { if (Set(ref _editValue, value)) OnPropertyChanged(nameof(EditValueInRange)); } }
+
+        public bool EditNameValid => !string.IsNullOrWhiteSpace(EditName);
+        public bool EditValueInRange => EditValue >= 1 && EditValue <= 5;
 
         public RelayCommand SaveEditCommand { get; }
         public RelayCommand CancelEditCommand { get; }
 
-        // (opciono) za auto-refresh grafa
+        // za auto-refresh grafa
         public event Action<int>? MeasurementArrived;
 
         public EntitiesViewModel(UndoManager undo, ILogService log)
@@ -81,7 +90,7 @@ namespace IUuIS_PZ2.ViewModels
             _undo = undo;
             _log = log;
 
-            // inicialni T4 primeri
+            // primeri
             Entities.Add(new DerEntity { Id = 12, Name = "Solar-NS-01", Type = DerType.SolarniPanel, LastValue = 3.4, IsValid = true });
             Entities.Add(new DerEntity { Id = 27, Name = "Wind-IB-07", Type = DerType.Vetrogenerator, LastValue = 5.7, IsValid = false });
 
@@ -97,7 +106,7 @@ namespace IUuIS_PZ2.ViewModels
             ResetSearchCommand = new RelayCommand(_ => { SearchText = ""; EntitiesView.Refresh(); });
 
             AddNewCommand = new RelayCommand(_ => AddFromForm(), _ => CanAddFromForm());
-            SaveEditCommand = new RelayCommand(_ => SaveEdit(), _ => _editing != null && !string.IsNullOrWhiteSpace(EditName));
+            SaveEditCommand = new RelayCommand(_ => SaveEdit(), _ => _editing != null && EditNameValid);
             CancelEditCommand = new RelayCommand(_ => CancelEdit());
 
             _sim = new MeasurementSimulator(() => Entities.ToList());
@@ -115,6 +124,7 @@ namespace IUuIS_PZ2.ViewModels
             return true;
         }
 
+        // Merenja NE idu u Undo; upisujemo LOKALNO vreme (DateTime.Now)
         private void OnMeasurement(object? sender, (int entityId, double value) m)
         {
             var ent = Entities.FirstOrDefault(x => x.Id == m.entityId);
@@ -123,24 +133,17 @@ namespace IUuIS_PZ2.ViewModels
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var oldVal = ent.LastValue;
-                var oldValid = ent.IsValid;
                 ent.LastValue = m.value;
                 ent.IsValid = valid;
-                _undo.Push(() => { ent.LastValue = oldVal; ent.IsValid = oldValid; });
             });
 
-            _log.AppendMeasurement(DateTime.UtcNow, ent.Id, m.value, valid);
+            _log.AppendMeasurement(DateTime.Now, ent.Id, m.value, valid); // lokalno vreme
             MeasurementArrived?.Invoke(ent.Id);
         }
 
         // Add
-        private void BeginAdd()
-        {
-            IsEditing = false; // pokaži Add panel
-        }
-
-        private bool CanAddFromForm() => NewId > 0 && !string.IsNullOrWhiteSpace(NewName);
+        private void BeginAdd() => IsEditing = false;
+        private bool CanAddFromForm() => NewIdValid && NewNameValid;
 
         private void AddFromForm()
         {
@@ -154,14 +157,15 @@ namespace IUuIS_PZ2.ViewModels
             };
             Entities.Add(e);
             _undo.Push(() => Entities.Remove(e));
-            _log.AppendMeasurement(DateTime.UtcNow, e.Id, e.LastValue, e.IsValid);
+            _log.AppendMeasurement(DateTime.Now, e.Id, e.LastValue, e.IsValid); // lokalno
             _sim.Stop(); _sim.Start();
 
-            // reset Add forme
+            MessageBox.Show("Added.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+
             NewId = 0; NewName = ""; NewType = DerType.SolarniPanel; NewValue = 0;
         }
 
-        // Edit
+        // Edit (UI)
         private void BeginEdit()
         {
             if (SelectedEntity == null) return;
@@ -172,7 +176,7 @@ namespace IUuIS_PZ2.ViewModels
             EditType = _editing.Type;
             EditValue = _editing.LastValue;
 
-            IsEditing = true; // sakrij Add, prikaži Edit
+            IsEditing = true;
             SaveEditCommand.RaiseCanExecuteChanged();
         }
 
@@ -192,18 +196,44 @@ namespace IUuIS_PZ2.ViewModels
             e.IsValid = EditValue >= 1 && EditValue <= 5;
 
             if (oldVal != EditValue || oldValid != e.IsValid)
-                _log.AppendMeasurement(DateTime.UtcNow, e.Id, e.LastValue, e.IsValid);
+                _log.AppendMeasurement(DateTime.Now, e.Id, e.LastValue, e.IsValid); // lokalno
 
             _undo.Push(() => { e.Name = oldName; e.Type = oldType; e.LastValue = oldVal; e.IsValid = oldValid; });
 
+            MessageBox.Show("Saved.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+
             _editing = null;
-            IsEditing = false; // vrati Add panel
+            IsEditing = false;
         }
 
         private void CancelEdit()
         {
             _editing = null;
-            IsEditing = false; // vrati Add panel
+            IsEditing = false;
+        }
+
+        // Edit (konzola)
+        public string? EditFromConsole(int id, string? newName, DerType? newType, double? newValue)
+        {
+            var e = Entities.FirstOrDefault(x => x.Id == id);
+            if (e == null) return "Not found";
+
+            var oldName = e.Name;
+            var oldType = e.Type;
+            var oldVal = e.LastValue;
+            var oldValid = e.IsValid;
+
+            if (!string.IsNullOrWhiteSpace(newName)) e.Name = newName;
+            if (newType.HasValue) e.Type = newType.Value;
+            if (newValue.HasValue)
+            {
+                e.LastValue = newValue.Value;
+                e.IsValid = newValue.Value >= 1 && newValue.Value <= 5;
+                _log.AppendMeasurement(DateTime.Now, e.Id, e.LastValue, e.IsValid); // lokalno
+            }
+
+            _undo.Push(() => { e.Name = oldName; e.Type = oldType; e.LastValue = oldVal; e.IsValid = oldValid; });
+            return null;
         }
 
         // Delete
@@ -218,6 +248,8 @@ namespace IUuIS_PZ2.ViewModels
             Entities.Remove(e);
             _undo.Push(() => Entities.Insert(index, e));
             _sim.Stop(); _sim.Start();
+
+            MessageBox.Show("Deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private int NextId() => Entities.Count == 0 ? 1 : Entities.Max(x => x.Id) + 1;

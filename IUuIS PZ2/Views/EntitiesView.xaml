@@ -14,7 +14,7 @@
             <RowDefinition Height="*"/>
             <!-- Table -->
             <RowDefinition Height="Auto"/>
-            <!-- Form (Add/Edit) -->
+            <!-- Forms -->
         </Grid.RowDefinitions>
 
         <!-- Toolbar -->
@@ -91,7 +91,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- Forms (centar) -->
+        <!-- Forms (centered) -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -99,7 +99,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Add panel (centar) -->
+            <!-- ADD -->
             <Border Grid.Column="1" Padding="24" Width="560" Background="#FAFAFA"
                     BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center">
                 <Border.Style>
@@ -112,6 +112,7 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
+
                 <StackPanel>
                     <TextBlock Text="Add new entity:" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     <Grid>
@@ -123,45 +124,81 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <!-- ID -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- ID msg -->
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Name -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Name msg -->
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Type -->
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Value -->
-                            <RowDefinition Height="16"/>
-                            <!-- separator -->
                             <RowDefinition Height="Auto"/>
-                            <!-- Add button -->
+                            <!-- Value msg -->
+                            <RowDefinition Height="16"/>
+                            <!-- sep -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Add btn -->
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Margin="0,6,0,0"/>
                         <TextBox   Grid.Row="0" Grid.Column="2" Width="260" Text="{Binding NewId, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
-                        <TextBox   Grid.Row="2" Grid.Column="2" Width="260" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="ID must be > 0"
+                                   Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewIdValid}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
-                        <ComboBox  Grid.Row="4" Grid.Column="2" Width="260"
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="3" Grid.Column="2" Width="260" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Name is required"
+                                   Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewNameValid}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
+                        <ComboBox  Grid.Row="6" Grid.Column="2" Width="260"
                                    SelectedValuePath="Tag" SelectedValue="{Binding NewType}">
                             <ComboBoxItem Content="Solarni panel"  Tag="{x:Static models:DerType.SolarniPanel}"/>
                             <ComboBoxItem Content="Vetrogenerator" Tag="{x:Static models:DerType.Vetrogenerator}"/>
                         </ComboBox>
 
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
-                        <TextBox   Grid.Row="6" Grid.Column="2" Width="260" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="8" Grid.Column="2" Width="260" Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <Button Grid.Row="8" Grid.Column="2" Content="+ Add" Width="120" Height="32"
+                        <TextBlock Grid.Row="9" Grid.Column="2" Text="Tip: use '.' for decimal (e.g. 3.2)" Foreground="Gray" FontSize="11" Margin="0,2,0,0"/>
+
+                        <Button Grid.Row="11" Grid.Column="2" Content="+ Add" Width="120" Height="32"
                                 HorizontalAlignment="Left" Margin="0,8,0,0"
                                 Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding AddNewCommand}"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- Edit panel (centar) -->
+            <!-- EDIT -->
             <Border Grid.Column="1" Padding="24" Width="560" Background="#FAFAFA"
                     BorderBrush="#E6E6E6" BorderThickness="1" HorizontalAlignment="Center">
                 <Border.Style>
@@ -174,6 +211,7 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
+
                 <StackPanel>
                     <TextBlock Text="Edit entity:" FontWeight="SemiBold" Margin="0,0,0,16"/>
                     <Grid>
@@ -188,14 +226,18 @@
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Name -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Name msg -->
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Type -->
                             <RowDefinition Height="8"/>
                             <RowDefinition Height="Auto"/>
                             <!-- Value -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Value msg -->
                             <RowDefinition Height="16"/>
-                            <!-- separator -->
+                            <!-- sep -->
                             <RowDefinition Height="Auto"/>
                             <!-- Save/Cancel -->
                         </Grid.RowDefinitions>
@@ -206,17 +248,45 @@
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Name:" Margin="0,6,0,0"/>
                         <TextBox   Grid.Row="2" Grid.Column="2" Width="260" Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
-                        <ComboBox  Grid.Row="4" Grid.Column="2" Width="260"
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="Name is required"
+                                   Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EditNameValid}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Type:" Margin="0,6,0,0"/>
+                        <ComboBox  Grid.Row="5" Grid.Column="2" Width="260"
                                    SelectedValuePath="Tag" SelectedValue="{Binding EditType}">
                             <ComboBoxItem Content="Solarni panel"  Tag="{x:Static models:DerType.SolarniPanel}"/>
                             <ComboBoxItem Content="Vetrogenerator" Tag="{x:Static models:DerType.Vetrogenerator}"/>
                         </ComboBox>
 
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
-                        <TextBox   Grid.Row="6" Grid.Column="2" Width="260" Text="{Binding EditValue, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Value:" Margin="0,6,0,0"/>
+                        <TextBox   Grid.Row="7" Grid.Column="2" Width="260" Text="{Binding EditValue, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <StackPanel Grid.Row="8" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+                        <TextBlock Grid.Row="8" Grid.Column="2" Text="Valid range: 1–5 MW (values outside are Invalid)"
+                                   Foreground="Gray" FontSize="11" Margin="0,2,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EditValueInRange}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel Grid.Row="10" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
                             <Button Content="Save"   Width="96" Height="32" Margin="0,0,12,0"
                                     Background="#EEEEEE" BorderBrush="#DDDDDD" Command="{Binding SaveEditCommand}"/>
                             <Button Content="Cancel" Width="96" Height="32"

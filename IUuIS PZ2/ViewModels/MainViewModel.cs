@@ -1,10 +1,14 @@
 ﻿// IUuIS_PZ2/ViewModels/MainViewModel.cs
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using IUuIS_PZ2.Services;
 using IUuIS_PZ2.Utils;
+using IUuIS_PZ2.Models;
+using IUuIS_PZ2.Interface;
 
 namespace IUuIS_PZ2.ViewModels
 {
@@ -12,7 +16,10 @@ namespace IUuIS_PZ2.ViewModels
 
     public class MainViewModel : ObservableObject
     {
+        private readonly ILogService _log;   // zajednički LogService (putanja u status baru)
+
         public UndoManager Undo { get; } = new();
+
         public EntitiesViewModel EntitiesVM { get; }
         public DisplayViewModel DisplayVM { get; }
         public GraphViewModel GraphVM { get; }
@@ -27,10 +34,10 @@ namespace IUuIS_PZ2.ViewModels
         public RelayCommand NavigateDisplayCommand { get; }
         public RelayCommand NavigateGraphCommand { get; }
 
-        private string _status = "1 Entities • 2 Display • 3 Graph • Ctrl+Z Undo • Ctrl+K Console • Enter Apply • Esc Reset";
+        private string _status = "";
         public string StatusText { get => _status; set => Set(ref _status, value); }
 
-        // Console (CMD stil)
+        // CMD konzola
         private bool _consoleVisible;
         public bool ConsoleVisible { get => _consoleVisible; set => Set(ref _consoleVisible, value); }
 
@@ -44,10 +51,10 @@ namespace IUuIS_PZ2.ViewModels
 
         public MainViewModel()
         {
-            var log = new LogService();
-            EntitiesVM = new EntitiesViewModel(Undo, log);
+            _log = new LogService();                     // jedna instanca za ceo app
+            EntitiesVM = new EntitiesViewModel(Undo, _log);
             DisplayVM = new DisplayViewModel(EntitiesVM);
-            GraphVM = new GraphViewModel(log, EntitiesVM);
+            GraphVM = new GraphViewModel(_log, EntitiesVM);
 
             _currentViewModel = EntitiesVM;
             _currentView = AppView.Entities;
@@ -58,6 +65,17 @@ namespace IUuIS_PZ2.ViewModels
 
             ToggleConsoleCommand = new RelayCommand(_ => ConsoleVisible = !ConsoleVisible);
             ExecuteConsoleCommand = new RelayCommand(_ => ExecuteConsole());
+
+            // status bar + skraćena putanja do log-a
+            var shortLog = _log.LogPath;
+            try
+            {
+                if (shortLog.Length > 60)
+                    shortLog = $"{Path.GetPathRoot(shortLog)}...{Path.DirectorySeparatorChar}{Path.GetFileName(shortLog)}";
+            }
+            catch { /* ignore */ }
+
+            StatusText = $"1 Entities • 2 Display • 3 Graph • Ctrl+Z Undo • Ctrl+K Console • Enter Apply • Esc Reset • Log: {shortLog}";
         }
 
         private void LogToConsole(string msg) => ConsoleHistory.Add($"[{DateTime.Now:HH:mm:ss}] {msg}");
@@ -76,7 +94,7 @@ namespace IUuIS_PZ2.ViewModels
                 switch (cmd)
                 {
                     case "help":
-                        LogToConsole("nav entities|display|graph; search name <txt>|type <txt>; clear; add id= name= type= value=; edit id= [name=] [type=] [value=]; del id=; restart; undo");
+                        LogToConsole("nav entities|display|graph; search name <txt>|type <txt>; clear; add id= name= type= value=; edit id= [name=] [type=] [value=]; del id=; restart; undo; logpath; openlog; clearlog; cls|c|clean (clear console)");
                         break;
 
                     case "nav":
@@ -100,49 +118,59 @@ namespace IUuIS_PZ2.ViewModels
                         break;
 
                     case "clear":
+                        // reset P1 filter
                         EntitiesVM.SearchText = "";
                         EntitiesVM.ApplySearchCommand.Execute(null);
                         LogToConsole("Filter cleared");
                         break;
 
                     case "add":
-                        // add id=101 name=Solar-X type=solar value=3.2
-                        var a = ParseArgs(parts.Skip(1));
-                        var id = int.Parse(a["id"]);
-                        var name = a["name"];
-                        var type = a["type"].ToLowerInvariant().Contains("vet") ? Models.DerType.Vetrogenerator : Models.DerType.SolarniPanel;
-                        var value = double.Parse(a["value"], CultureInfo.InvariantCulture);
+                        {
+                            var a = ParseArgs(parts.Skip(1));
+                            var id = int.Parse(a["id"]);
+                            var name = a["name"];
+                            var type = a["type"].ToLowerInvariant().Contains("vet") ? DerType.Vetrogenerator : DerType.SolarniPanel;
+                            var value = double.Parse(a["value"], CultureInfo.InvariantCulture);
 
-                        var e = new Models.DerEntity { Id = id, Name = name, Type = type, LastValue = value, IsValid = value >= 1 && value <= 5 };
-                        EntitiesVM.Entities.Add(e);
-                        LogToConsole($"Added {id}:{name}");
-                        break;
+                            var e = new DerEntity { Id = id, Name = name, Type = type, LastValue = value, IsValid = value >= 1 && value <= 5 };
+                            EntitiesVM.Entities.Add(e);
+                            LogToConsole($"Added {id}:{name}");
+                            break;
+                        }
 
                     case "edit":
-                        // edit id=101 [name=...] [type=...] [value=...]
-                        var ed = ParseArgs(parts.Skip(1));
-                        var eid = int.Parse(ed["id"]);
-                        var ent = EntitiesVM.Entities.FirstOrDefault(x => x.Id == eid);
-                        if (ent == null) { LogToConsole("Not found"); break; }
-                        if (ed.TryGetValue("name", out var nn)) ent.Name = nn;
-                        if (ed.TryGetValue("type", out var tt)) ent.Type = tt.ToLowerInvariant().Contains("vet") ? Models.DerType.Vetrogenerator : Models.DerType.SolarniPanel;
-                        if (ed.TryGetValue("value", out var vv))
                         {
-                            var v = double.Parse(vv, CultureInfo.InvariantCulture);
-                            ent.LastValue = v; ent.IsValid = v >= 1 && v <= 5;
+                            var ed = ParseArgs(parts.Skip(1));
+                            if (!ed.TryGetValue("id", out var idStr) || !int.TryParse(idStr, out var eid))
+                            { LogToConsole("edit id=<int> [name=] [type=] [value=]"); break; }
+
+                            string? nn = ed.ContainsKey("name") ? ed["name"] : null;
+
+                            DerType? tt = null;
+                            if (ed.TryGetValue("type", out var tstr))
+                                tt = tstr.ToLowerInvariant().Contains("vet") ? DerType.Vetrogenerator : DerType.SolarniPanel;
+
+                            double? vv = null;
+                            if (ed.TryGetValue("value", out var vstr) &&
+                                double.TryParse(vstr, NumberStyles.Any, CultureInfo.InvariantCulture, out var dv))
+                                vv = dv;
+
+                            var err = EntitiesVM.EditFromConsole(eid, nn, tt, vv);
+                            LogToConsole(err ?? $"Edited {eid}");
+                            break;
                         }
-                        LogToConsole($"Edited {eid}");
-                        break;
 
                     case "del":
                     case "delete":
-                        var d = ParseArgs(parts.Skip(1));
-                        var did = int.Parse(d["id"]);
-                        var del = EntitiesVM.Entities.FirstOrDefault(x => x.Id == did);
-                        if (del == null) { LogToConsole("Not found"); break; }
-                        EntitiesVM.Entities.Remove(del);
-                        LogToConsole($"Deleted {did}");
-                        break;
+                        {
+                            var d = ParseArgs(parts.Skip(1));
+                            var did = int.Parse(d["id"]);
+                            var del = EntitiesVM.Entities.FirstOrDefault(x => x.Id == did);
+                            if (del == null) { LogToConsole("Not found"); break; }
+                            EntitiesVM.Entities.Remove(del);
+                            LogToConsole($"Deleted {did}");
+                            break;
+                        }
 
                     case "restart":
                         EntitiesVM.RestartSimCommand.Execute(null);
@@ -152,6 +180,43 @@ namespace IUuIS_PZ2.ViewModels
                     case "undo":
                         Undo.Undo();
                         LogToConsole("Undo");
+                        break;
+
+                    // log alatke
+                    case "logpath":
+                        LogToConsole(_log.LogPath);
+                        break;
+
+                    case "openlog":
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo { FileName = _log.LogPath, UseShellExecute = true });
+                            LogToConsole("Opening log...");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogToConsole("Open failed: " + ex.Message);
+                        }
+                        break;
+
+                    case "clearlog":
+                        try
+                        {
+                            File.WriteAllText(_log.LogPath, "ts;entityId;value;valid\n");
+                            LogToConsole("Log cleared.");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogToConsole("Clear failed: " + ex.Message);
+                        }
+                        break;
+
+                    // NOVO: čišćenje konzole
+                    case "cls":
+                    case "c":
+                    case "clean":
+                    case "clearconsole":
+                        ConsoleHistory.Clear();
                         break;
 
                     default:

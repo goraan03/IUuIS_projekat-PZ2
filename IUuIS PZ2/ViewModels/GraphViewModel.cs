@@ -28,7 +28,6 @@ namespace IUuIS_PZ2.ViewModels
             set { if (Set(ref _selectedEntity, value)) BuildPlot(); }
         }
 
-        // prikaz invalid tačaka (checkbox)
         private bool _showInvalid = true;
         public bool ShowInvalid
         {
@@ -47,12 +46,7 @@ namespace IUuIS_PZ2.ViewModels
             _entitiesVM = entitiesVM;
             _selectedEntity = Entities.FirstOrDefault();
 
-            // auto-refresh grafa kada stigne merenje za izabran entitet
-            _entitiesVM.MeasurementArrived += id =>
-            {
-                if (SelectedEntity?.Id == id) BuildPlot();
-            };
-
+            _entitiesVM.MeasurementArrived += id => { if (SelectedEntity?.Id == id) BuildPlot(); };
             RefreshCommand = new RelayCommand(_ => BuildPlot());
             BuildPlot();
         }
@@ -61,21 +55,24 @@ namespace IUuIS_PZ2.ViewModels
         {
             var pm = new PlotModel { PlotAreaBorderColor = OxyColor.FromRgb(230, 230, 230) };
 
-            // poslednje 4 merenja (wireframe t0..t3)
+            // poslednje 4 merenja za izabrani entitet
             var data = ReadMeasurements(SelectedEntity?.Id).TakeLast(4).ToList();
 
-            var x = new CategoryAxis
+            // X‑osa = realno vreme
+            var xAxis = new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
-                Title = "Time(t)",
-                Key = "timeAxis",
-                GapWidth = 0.2,
+                StringFormat = "HH:mm:ss",
+                Title = "Time",
+                IntervalType = DateTimeIntervalType.Seconds,
                 MajorGridlineStyle = LineStyle.Solid,
-                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238)
+                MajorGridlineColor = OxyColor.FromRgb(238, 238, 238),
+                MinorGridlineStyle = LineStyle.Dot,
+                MinorGridlineColor = OxyColor.FromRgb(245, 245, 245)
             };
-            for (int i = 0; i < data.Count; i++) x.Labels.Add($"t{i}");
-            pm.Axes.Add(x);
+            pm.Axes.Add(xAxis);
 
+            // Y fiksno 0–6 (T4) – sve tačke na Y=3 (horizontalna linija kao u wireframe-u)
             pm.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
@@ -88,35 +85,18 @@ namespace IUuIS_PZ2.ViewModels
                 MinorGridlineColor = OxyColor.FromRgb(245, 245, 245)
             });
 
-            var valid = new ScatterSeries
-            {
-                MarkerType = MarkerType.Circle,
-                MarkerFill = OxyColor.FromRgb(220, 220, 220),
-                MarkerStroke = OxyColors.Gray,
-                MarkerStrokeThickness = 1,
-                XAxisKey = "timeAxis"
-            };
-            var invalid = new ScatterSeries
-            {
-                MarkerType = MarkerType.Circle,
-                MarkerFill = OxyColors.Transparent,
-                MarkerStroke = OxyColors.DimGray,
-                MarkerStrokeThickness = 1,
-                XAxisKey = "timeAxis"
-            };
+            var valid = new ScatterSeries { MarkerType = MarkerType.Circle, MarkerFill = OxyColor.FromRgb(220, 220, 220), MarkerStroke = OxyColors.Gray, MarkerStrokeThickness = 1 };
+            var invalid = new ScatterSeries { MarkerType = MarkerType.Circle, MarkerFill = OxyColors.Transparent, MarkerStroke = OxyColors.DimGray, MarkerStrokeThickness = 1 };
 
-            for (int i = 0; i < data.Count; i++)
+            foreach (var r in data)
             {
-                var r = data[i];
-                // poluprečnik ∝ vrednosti 1..5  → 16..56px
-                var t = Math.Clamp((r.Value - 1) / 4.0, 0, 1);
-                var size = 16 + t * 40;
+                var size = Math.Clamp((r.Value - 1) / 4.0, 0, 1);
+                var markerSize = 16 + size * 40;
+                var x = DateTimeAxis.ToDouble(r.Timestamp);
+                var p = new ScatterPoint(x, 3, markerSize);
 
-                // svi mehuri u visini Y=3 radi “horizontalnog” izgleda iz wireframe-a
-                var point = new ScatterPoint(i, 3, size);
-
-                if (r.IsValid) valid.Points.Add(point);
-                else if (ShowInvalid) invalid.Points.Add(point);
+                if (r.IsValid) valid.Points.Add(p);
+                else if (ShowInvalid) invalid.Points.Add(p);
             }
 
             pm.Series.Add(valid);
@@ -131,20 +111,20 @@ namespace IUuIS_PZ2.ViewModels
                 return Enumerable.Empty<MeasurementRecord>();
 
             return File.ReadLines(_log.LogPath)
-                       .Skip(1)
-                       .Select(line =>
-                       {
-                           var p = line.Split(';');
-                           if (p.Length < 4) return null;
-                           if (!int.TryParse(p[1], out var id) || id != entityId.Value) return null;
-                           if (!DateTime.TryParse(p[0], null, DateTimeStyles.RoundtripKind, out var ts)) return null;
-                           if (!double.TryParse(p[2], NumberStyles.Any, CultureInfo.InvariantCulture, out var val)) return null;
-                           var isValid = bool.TryParse(p[3], out var b) && b;
-                           return new MeasurementRecord { Timestamp = ts.ToLocalTime(), EntityId = id, Value = val, IsValid = isValid };
-                       })
-                       .Where(x => x != null)!
-                       .Cast<MeasurementRecord>()
-                       .ToList();
+                .Skip(1)
+                .Select(line =>
+                {
+                    var p = line.Split(';');
+                    if (p.Length < 4) return null;
+                    if (!int.TryParse(p[1], out var id) || id != entityId.Value) return null;
+                    if (!DateTime.TryParse(p[0], null, DateTimeStyles.RoundtripKind, out var ts)) return null;
+                    if (!double.TryParse(p[2], NumberStyles.Any, CultureInfo.InvariantCulture, out var val)) return null;
+                    var isValid = bool.TryParse(p[3], out var b) && b;
+                    return new MeasurementRecord { Timestamp = ts.ToLocalTime(), EntityId = id, Value = val, IsValid = isValid };
+                })
+                .Where(x => x != null)!
+                .Cast<MeasurementRecord>()
+                .ToList();
         }
     }
 }

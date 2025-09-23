@@ -11,19 +11,16 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- kontrole (centrirane) -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="24,24,24,12" HorizontalAlignment="Center">
             <ComboBox Width="280" ItemsSource="{Binding Entities}" SelectedItem="{Binding SelectedEntity}" DisplayMemberPath="Name"/>
             <CheckBox Content="View invalid" Margin="12,0,0,0" IsChecked="{Binding ShowInvalid}"/>
         </StackPanel>
 
-        <!-- graf (popunjava prostor) -->
         <Border Grid.Row="1" Margin="24" BorderBrush="#E6E6E6" BorderThickness="1" Background="White" Padding="16"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <oxy:PlotView Model="{Binding Plot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         </Border>
 
-        <!-- legenda (centrirana) -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,24">
             <TextBlock Text="Legend: " Foreground="Gray" Margin="0,6,8,0"/>
             <Ellipse Fill="#DDDDDD" Stroke="Gray" Width="12" Height="12" Margin="0,6,4,0"/>
