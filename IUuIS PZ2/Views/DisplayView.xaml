@@ -17,7 +17,7 @@
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,12">
             <ToggleButton Content="Connect" Width="100" Height="32" Margin="0,0,12,0"
                           IsChecked="{Binding ConnectMode}"/>
-            <TextBlock Text="(Drag iz liste u slot • Klik A pa B u Connect modu)" Foreground="Gray" VerticalAlignment="Center"/>
+            <TextBlock Text="(Drag from list to a slot • Click A than B in Connect mode)" Foreground="Gray" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Levo: filtrirane liste iz VM -->
