@@ -1,16 +1,11 @@
-﻿// IUuIS_PZ2/ViewModels/GraphViewModel.cs
-using IUuIS_PZ2.Interface;
+﻿using IUuIS_PZ2.Interface;
 using IUuIS_PZ2.Models;
-using IUuIS_PZ2.Services;
 using IUuIS_PZ2.Utils;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace IUuIS_PZ2.ViewModels
 {
@@ -72,7 +67,7 @@ namespace IUuIS_PZ2.ViewModels
             };
             pm.Axes.Add(xAxis);
 
-            // Y fiksno 0–6 (T4) – sve tačke na Y=3 (horizontalna linija kao u wireframe-u)
+            // Y fiksno 0–6 (T4) – sve tacke na Y=3
             pm.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,

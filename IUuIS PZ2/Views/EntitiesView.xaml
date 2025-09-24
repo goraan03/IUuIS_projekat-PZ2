@@ -1,5 +1,4 @@
-﻿<!-- IUuIS_PZ2/Views/EntitiesView.xaml -->
-<UserControl x:Class="IUuIS_PZ2.Views.EntitiesView"
+﻿<UserControl x:Class="IUuIS_PZ2.Views.EntitiesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:models="clr-namespace:IUuIS_PZ2.Models"

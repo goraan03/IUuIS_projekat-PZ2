@@ -1,5 +1,4 @@
-﻿<!-- IUuIS_PZ2/Views/DisplayView.xaml -->
-<UserControl x:Class="IUuIS_PZ2.Views.DisplayView"
+﻿<UserControl x:Class="IUuIS_PZ2.Views.DisplayView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="White">
@@ -21,7 +20,7 @@
             <TextBlock Text="(Drag iz liste u slot • Klik A pa B u Connect modu)" Foreground="Gray" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <!-- Levo: filtrirane liste iz VM (više ne koristimo XAML DataTrigger-e) -->
+        <!-- Levo: filtrirane liste iz VM -->
         <StackPanel Grid.Row="1" Grid.Column="0">
             <TextBlock Text="Solarni paneli" FontWeight="SemiBold" Margin="0,0,0,6"/>
             <ListBox ItemsSource="{Binding SolarList}"
@@ -46,7 +45,7 @@
             </ListBox>
         </StackPanel>
 
-        <!-- Desno: slot mreža + linije -->
+        <!-- Desno: slot mreza + linije -->
         <Grid Grid.Row="1" Grid.Column="2">
             <Canvas x:Name="LinkCanvas" IsHitTestVisible="False" Panel.ZIndex="0"/>
             <ItemsControl x:Name="SlotsItems" ItemsSource="{Binding Slots}" Panel.ZIndex="1">

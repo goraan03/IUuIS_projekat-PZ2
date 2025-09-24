@@ -1,14 +1,11 @@
-﻿// IUuIS_PZ2/ViewModels/MainViewModel.cs
-using System;
+﻿using IUuIS_PZ2.Interface;
+using IUuIS_PZ2.Models;
+using IUuIS_PZ2.Services;
+using IUuIS_PZ2.Utils;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using IUuIS_PZ2.Services;
-using IUuIS_PZ2.Utils;
-using IUuIS_PZ2.Models;
-using IUuIS_PZ2.Interface;
 
 namespace IUuIS_PZ2.ViewModels
 {
@@ -16,7 +13,7 @@ namespace IUuIS_PZ2.ViewModels
 
     public class MainViewModel : ObservableObject
     {
-        private readonly ILogService _log;   // zajednički LogService (putanja u status baru)
+        private readonly ILogService _log;
 
         public UndoManager Undo { get; } = new();
 
@@ -51,7 +48,7 @@ namespace IUuIS_PZ2.ViewModels
 
         public MainViewModel()
         {
-            _log = new LogService();                     // jedna instanca za ceo app
+            _log = new LogService();
             EntitiesVM = new EntitiesViewModel(Undo, _log);
             DisplayVM = new DisplayViewModel(EntitiesVM);
             GraphVM = new GraphViewModel(_log, EntitiesVM);
@@ -66,7 +63,7 @@ namespace IUuIS_PZ2.ViewModels
             ToggleConsoleCommand = new RelayCommand(_ => ConsoleVisible = !ConsoleVisible);
             ExecuteConsoleCommand = new RelayCommand(_ => ExecuteConsole());
 
-            // status bar + skraćena putanja do log-a
+            // status bar + skracena putanja do log-a
             var shortLog = _log.LogPath;
             try
             {
@@ -211,7 +208,6 @@ namespace IUuIS_PZ2.ViewModels
                         }
                         break;
 
-                    // NOVO: čišćenje konzole
                     case "cls":
                     case "c":
                     case "clean":

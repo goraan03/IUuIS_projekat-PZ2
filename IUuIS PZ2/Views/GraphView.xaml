@@ -1,5 +1,4 @@
-﻿<!-- IUuIS_PZ2/Views/GraphView.xaml -->
-<UserControl x:Class="IUuIS_PZ2.Views.GraphView"
+﻿<UserControl x:Class="IUuIS_PZ2.Views.GraphView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:oxy="http://oxyplot.org/wpf"

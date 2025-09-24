@@ -1,7 +1,6 @@
-﻿// IUuIS_PZ2/MainWindow.xaml.cs
+﻿using IUuIS_PZ2.ViewModels;
 using System.ComponentModel;
 using System.Windows;
-using IUuIS_PZ2.ViewModels;
 
 namespace IUuIS_PZ2
 {
@@ -22,7 +21,7 @@ namespace IUuIS_PZ2
         {
             if (e.PropertyName == nameof(MainViewModel.ConsoleVisible) && _vm.ConsoleVisible)
             {
-                // Fokus na input čim se konzola otvori
+                // Fokus na input cim se konzola otvori
                 Dispatcher.BeginInvoke(() => ConsoleInputBox.Focus());
             }
         }

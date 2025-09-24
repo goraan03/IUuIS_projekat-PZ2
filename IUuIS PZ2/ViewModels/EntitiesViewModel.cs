@@ -1,15 +1,12 @@
-﻿// IUuIS_PZ2/ViewModels/EntitiesViewModel.cs
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Input;
-using IUuIS_PZ2.Interface;
+﻿using IUuIS_PZ2.Interface;
 using IUuIS_PZ2.Models;
 using IUuIS_PZ2.Services;
 using IUuIS_PZ2.Utils;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Input;
 
 namespace IUuIS_PZ2.ViewModels
 {

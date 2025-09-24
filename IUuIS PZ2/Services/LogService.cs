@@ -1,10 +1,5 @@
 ﻿using IUuIS_PZ2.Interface;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IUuIS_PZ2.Services
 {

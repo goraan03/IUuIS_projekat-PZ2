@@ -1,12 +1,8 @@
-﻿// IUuIS_PZ2/ViewModels/DisplayViewModel.cs
-using System;
+﻿using IUuIS_PZ2.Models;
+using IUuIS_PZ2.Utils;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using IUuIS_PZ2.Models;
-using IUuIS_PZ2.Utils;
 
 namespace IUuIS_PZ2.ViewModels
 {
@@ -44,7 +40,7 @@ namespace IUuIS_PZ2.ViewModels
                 AddToProperListSorted(e);
             }
 
-            // Praćenje promena kolekcije
+            // Pracenje promena kolekcije
             AllEntities.CollectionChanged += AllEntities_CollectionChanged;
         }
 

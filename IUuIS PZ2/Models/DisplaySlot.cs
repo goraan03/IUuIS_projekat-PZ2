@@ -1,5 +1,4 @@
-﻿// IUuIS_PZ2/Models/DisplaySlot.cs
-using IUuIS_PZ2.Utils;
+﻿using IUuIS_PZ2.Utils;
 
 namespace IUuIS_PZ2.Models
 {

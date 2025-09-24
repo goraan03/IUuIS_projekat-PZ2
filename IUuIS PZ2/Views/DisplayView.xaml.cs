@@ -1,13 +1,10 @@
-﻿// IUuIS_PZ2/Views/DisplayView.xaml.cs
-using System;
-using System.Linq;
+﻿using IUuIS_PZ2.Models;
+using IUuIS_PZ2.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using IUuIS_PZ2.Models;
-using IUuIS_PZ2.ViewModels;
 
 namespace IUuIS_PZ2.Views
 {

@@ -1,5 +1,4 @@
-﻿// IUuIS_PZ2/Models/Link.cs
-namespace IUuIS_PZ2.Models
+﻿namespace IUuIS_PZ2.Models
 {
     public class Link
     {
